@@ -6,11 +6,14 @@ set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O3 -g -std=c++11 -Wall -Wno-deprecated -Wer
 
 set(LIB_SRC
     wille/log.cpp
+    wille/util.cpp
     )
 
 add_library(wille SHARED ${LIB_SRC})
 
-add_executable(test tests/test.cpp)
+add_executable(test 
+    tests/test.cpp
+    )
 add_dependencies(test wille)
 target_link_libraries(test wille)
 add_link_options(-rdynamic)

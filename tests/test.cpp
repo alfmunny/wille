@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "../wille/log.h"
+#include "../wille/util.h"
 
 int main() {
     wille::Logger::ptr logger(new wille::Logger);
@@ -17,5 +18,7 @@ int main() {
     //event->getSS() << "wille sylar log";
     WILLE_LOG_DEBUG(logger) << "wille log";
     WILLE_LOG_ERROR(logger) << "wille log error";
+
+    WILLE_LOG_FMT_ERROR(logger, "test macro fmt error %s", "aa");
     return 0;
 }

@@ -9,20 +9,30 @@
 #include <fstream>
 #include <vector>
 
+// simple logger
 #define WILLE_LOG_LEVEL(logger, level) \
   if(logger->getLevel() <= level) \
     wille::LogEventWrapper(wille::LogEvent::ptr(new wille::LogEvent(logger, level, \
-            __FILE__, __LINE__, 0, 1, 2, time(0), ""))).getSS()
+            __FILE__, __LINE__, 0, wille::GetThreadId(), wille::GetFiberId(), time(0), ""))).getSS()
 
 #define WILLE_LOG_DEBUG(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::DEBUG)
-
 #define WILLE_LOG_INFO(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::INFO)
-
 #define WILLE_LOG_WARN(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::WARN)
-
 #define WILLE_LOG_ERROR(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::ERROR)
-
 #define WILLE_LOG_FATAL(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::FATAL)
+
+// simple fmt logger
+#define WILLE_LOG_FMT_LEVEL(logger, level, fmt, ...) \
+    if(logger->getLevel() <= level) \
+        wille::LogEventWrapper(wille::LogEvent::ptr(new wille::LogEvent(logger, level, \
+                        __FILE__, __LINE__, 0, wille::GetThreadId(),\
+                wille::GetFiberId(), time(0), ""))).getEvent()->format(fmt, __VA_ARGS__)
+
+#define WILLE_LOG_FMT_DEBUG(logger, fmt, ...) WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::DEBUG, fmt, __VA_ARGS__)
+#define WILLE_LOG_FMT_INFO(logger, fmt, ...)  WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::INFO, fmt, __VA_ARGS__)
+#define WILLE_LOG_FMT_WARN(logger, fmt, ...)  WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::WARN, fmt, __VA_ARGS__)
+#define WILLE_LOG_FMT_ERROR(logger, fmt, ...) WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::ERROR, fmt, __VA_ARGS__)
+#define WILLE_LOG_FMT_FATAL(logger, fmt, ...) WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::FATAL, fmt, __VA_ARGS__)
 
 namespace wille {
 
@@ -89,7 +99,7 @@ public:
 
   std::stringstream& getSS();
 
-  LogEvent::ptr getLogEvent() const { return m_event; }
+  LogEvent::ptr getEvent() const { return m_event; }
 
 private:
   LogEvent::ptr m_event;
