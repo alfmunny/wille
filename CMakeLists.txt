@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(wille)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O3 -g -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function")
 
 set(LIB_SRC
