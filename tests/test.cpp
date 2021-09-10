@@ -20,5 +20,8 @@ int main() {
     WILLE_LOG_ERROR(logger) << "wille log error";
 
     WILLE_LOG_FMT_ERROR(logger, "test macro fmt error %s", "aa");
+
+    auto l = wille::LoggerMgr::GetInstance()->getLogger("xx");
+    WILLE_LOG_INFO(l) << "hahahah";
     return 0;
 }

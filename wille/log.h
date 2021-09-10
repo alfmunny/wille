@@ -8,6 +8,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <map>
+#include "singleton.h"
 
 // simple logger
 #define WILLE_LOG_LEVEL(logger, level) \
@@ -107,23 +109,23 @@ private:
 
 class LogFormatter {
 public:
-  typedef std::shared_ptr<LogFormatter> ptr;
-  LogFormatter(const std::string& pattern);
-  std::string format(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
-  std::ostream& format(std::ostream& ofs, std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
+    typedef std::shared_ptr<LogFormatter> ptr;
+    LogFormatter(const std::string& pattern);
+    std::string format(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
+    std::ostream& format(std::ostream& ofs, std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
 
 public:
-  class FormatItem {
-  public:
-    typedef std::shared_ptr<FormatItem> ptr;
+    class FormatItem {
+    public:
+      typedef std::shared_ptr<FormatItem> ptr;
 
-    virtual ~FormatItem() {}
-    virtual void format(std::ostream& os, std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) = 0;
-  };
+      virtual ~FormatItem() {}
+      virtual void format(std::ostream& os, std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) = 0;
+    };
 
-  void init();
-  bool isError() const { return m_error; }
-  const std::string getPattern() const { return m_pattern; }
+    void init();
+    bool isError() const { return m_error; }
+    const std::string getPattern() const { return m_pattern; }
 
 private:
   std::string m_pattern;
@@ -193,6 +195,18 @@ private:
   std::ofstream m_filestream;
   uint64_t m_lastTime = 0;
 };
+
+class LoggerManager {
+public:
+    LoggerManager();
+    Logger::ptr getLogger(const std::string& name);
+    void init();
+private:
+    std::map<std::string, Logger::ptr> m_loggers;
+    Logger::ptr m_root;
+};
+
+typedef wille::Singleton<LoggerManager> LoggerMgr;
 
 }
 
