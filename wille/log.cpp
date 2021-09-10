@@ -1,7 +1,7 @@
 #include "log.h"
-#include <iostream>
 #include <map>
 #include <memory>
+#include <iostream>
 
 namespace wille {
 
@@ -57,16 +57,13 @@ LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level,
     ,m_time(time)
     ,m_threadName(thread_name)
     ,m_logger(logger)
-    ,m_level(level)
-{
-
+    ,m_level(level) {
 }
 
 
 Logger::Logger(const std::string& name) 
     :m_name(name)
-    ,m_level(LogLevel::DEBUG)
-{
+    ,m_level(LogLevel::DEBUG) {
     //m_formatter.reset(new LogFormatter("%d [%p] %f %l %m %n"));
     m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
 }
@@ -117,8 +114,22 @@ void Logger::fatal(LogEvent::ptr event) {
     log(LogLevel::Level::FATAL, event);
 }
 
-FileLogAppender::FileLogAppender(const std::string& filename) {
+LogEventWrapper::LogEventWrapper(LogEvent::ptr event) 
+    :m_event(event) {
 
+}
+
+LogEventWrapper::~LogEventWrapper() {
+    m_event->getLogger()->log(m_event->getLevel(), m_event);
+}
+
+std::stringstream& LogEventWrapper::getSS() {
+    return m_event->getSS();
+}
+
+FileLogAppender::FileLogAppender(const std::string& filename) 
+    :m_filename(filename) {
+    reopen();
 }
 
 bool FileLogAppender::reopen() {
@@ -130,8 +141,17 @@ bool FileLogAppender::reopen() {
     return !!m_filestream;
 }
 
-
 void FileLogAppender::log(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event) {
+    if(level >= m_level) {
+        uint64_t now = event->getTime();
+        if (now >= (m_lastTime + 3)) {
+            reopen();
+            m_lastTime = now;
+        }
+        if(!m_formatter->format(m_filestream, logger, level, event)) {
+            std::cout << "error" << std::endl;
+        }
+    }
 
 }
 

@@ -8,12 +8,25 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include <iostream>
+
+#define WILLE_LOG_LEVEL(logger, level) \
+  if(logger->getLevel() <= level) \
+    wille::LogEventWrapper(wille::LogEvent::ptr(new wille::LogEvent(logger, level, \
+            __FILE__, __LINE__, 0, 1, 2, time(0), ""))).getSS()
+
+#define WILLE_LOG_DEBUG(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::DEBUG)
+
+#define WILLE_LOG_INFO(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::INFO)
+
+#define WILLE_LOG_WARN(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::WARN)
+
+#define WILLE_LOG_ERROR(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::ERROR)
+
+#define WILLE_LOG_FATAL(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::FATAL)
 
 namespace wille {
 
 class Logger;
-class LoggerManager;
 
 class LogLevel {
 public:
@@ -32,35 +45,25 @@ public:
 class LogEvent {
 public:
   typedef std::shared_ptr<LogEvent> ptr;
+
   LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level,
            const char* file, int32_t line, uint32_t elapse,
            uint32_t thread_id, uint32_t fiber_id, uint64_t time,
            const std::string& thread_name);
 
   const char* getFile() const { return m_file; }
-
   int32_t getLine() const { return m_line; }
-
   uint32_t getElapse() const { return m_elapse; }
-
   uint32_t getThreadId() const { return m_threadId; }
-
   uint64_t getTime() const { return m_time; }
-
   const std::string& getThreadName() const { return m_threadName; }
-  
   std::stringstream& getSS() { return m_ss; }
-  
   std::string getContent() const { return m_ss.str(); };
-
   uint32_t getFiberId() const { return m_fiberId; }
-
   std::shared_ptr<Logger> const getLogger() { return m_logger; }
-
   LogLevel::Level getLevel() const { return m_level; }
 
   void format(const char* fmt, ...);
-
   void format(const char* fmt, va_list al);
 
 private:
@@ -76,6 +79,21 @@ private:
   LogLevel::Level m_level;
 };
 
+class LogEventWrapper
+{
+public:
+  typedef std::shared_ptr<LogEventWrapper> ptr;
+
+  LogEventWrapper(LogEvent::ptr event);
+  ~LogEventWrapper();
+
+  std::stringstream& getSS();
+
+  LogEvent::ptr getLogEvent() const { return m_event; }
+
+private:
+  LogEvent::ptr m_event;
+};
 
 class LogFormatter {
 public:
@@ -94,9 +112,7 @@ public:
   };
 
   void init();
-
   bool isError() const { return m_error; }
-
   const std::string getPattern() const { return m_pattern; }
 
 private:
@@ -115,8 +131,11 @@ public:
   void setFormatter(LogFormatter::ptr val) { m_formatter = val; }
   LogFormatter::ptr getFormatter() const { return m_formatter; }
 
+  void setLevel(LogLevel::Level val) { m_level = val; }
+  LogLevel::Level getLevel() const { return m_level; }
+
 protected:
-    LogLevel::Level m_level;
+    LogLevel::Level m_level = LogLevel::Level::DEBUG;
     LogFormatter::ptr m_formatter;
 };
 
@@ -162,6 +181,7 @@ public:
 private:
   std::string m_filename;
   std::ofstream m_filestream;
+  uint64_t m_lastTime = 0;
 };
 
 }
