@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include "log.h"
+#include <yaml-cpp/yaml.h>
 #include <boost/lexical_cast.hpp>
 
 namespace wille {
@@ -52,7 +53,7 @@ public:
 
     bool fromString(const std::string& val) override {
         try {
-            m_val = boost::lexical_cast<T>(m_val);
+            m_val = boost::lexical_cast<T>(val);
             return true;
         } catch (std::exception& e) {
             WILLE_LOG_ERROR(WILLE_LOG_ROOT()) << "ConfigVar::fromString exception"
@@ -99,6 +100,10 @@ public:
         }
         return std::dynamic_pointer_cast<ConfigVar<T> >(it->second);
     }
+
+    static void LoadFromYaml(const YAML::Node& root);
+
+    static ConfigVarBase::ptr LookupBase(const std::string& name);
 private:
     static ConfigVarMap s_data;
 };
