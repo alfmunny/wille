@@ -1,6 +1,5 @@
 #include "util.h"
 
-
 namespace wille {
 
 pid_t GetThreadId() {

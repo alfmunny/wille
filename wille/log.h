@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include "singleton.h"
+#include "util.h"
 
 // simple logger
 #define WILLE_LOG_LEVEL(logger, level) \
