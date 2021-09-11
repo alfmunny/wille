@@ -26,7 +26,7 @@ wille::ConfigVar<std::map<std::string, int> >::ptr g_int_map_value_config =
 wille::ConfigVar<std::unordered_map<std::string, int> >::ptr g_int_umap_value_config = 
     wille::Config::Lookup("system.int_umap", std::unordered_map<std::string, int>{{"k", 2}}, "system int umap");
 
-void test_yaml() {
+void test_config() {
     YAML::Node root = YAML::LoadFile("/Users/alfmunny/Projects/wille/bin/conf/log.yml");
     WILLE_LOG_INFO(WILLE_LOG_ROOT()) << root;
 
@@ -64,6 +64,6 @@ void test_yaml() {
 }
 
 int main(int argc, char** argv) {
-    test_yaml();
+    test_config();
     return 0;
 }
