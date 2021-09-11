@@ -3,6 +3,8 @@
 #include "../wille/log.h"
 #include "../wille/util.h"
 
+static wille::Logger::ptr g_logger = WILLE_LOG_ROOT();
+
 int main() {
     wille::Logger::ptr logger(new wille::Logger);
     logger->addAppender(wille::LogAppender::ptr(new wille::StdoutLogAppender));
@@ -18,10 +20,8 @@ int main() {
     //event->getSS() << "wille sylar log";
     WILLE_LOG_DEBUG(logger) << "wille log";
     WILLE_LOG_ERROR(logger) << "wille log error";
-
     WILLE_LOG_FMT_ERROR(logger, "test macro fmt error %s", "aa");
 
-    auto l = wille::LoggerMgr::GetInstance()->getLogger("xx");
-    WILLE_LOG_INFO(l) << "logger manager";
+    WILLE_LOG_DEBUG(g_logger) << "wille static logger";
     return 0;
 }

@@ -36,6 +36,10 @@
 #define WILLE_LOG_FMT_ERROR(logger, fmt, ...) WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::ERROR, fmt, __VA_ARGS__)
 #define WILLE_LOG_FMT_FATAL(logger, fmt, ...) WILLE_LOG_FMT_LEVEL(logger, wille::LogLevel::FATAL, fmt, __VA_ARGS__)
 
+#define WILLE_LOG_ROOT() wille::LoggerMgr::GetInstance()->getRoot()
+
+#define WILLE_LOG_NAME(name) wille::LoggerMgr::GetInstance()->getLogger(name)
+
 namespace wille {
 
 class Logger;
@@ -200,6 +204,7 @@ class LoggerManager {
 public:
     LoggerManager();
     Logger::ptr getLogger(const std::string& name);
+    Logger::ptr getRoot() { return m_root; }
     void init();
 private:
     std::map<std::string, Logger::ptr> m_loggers;
