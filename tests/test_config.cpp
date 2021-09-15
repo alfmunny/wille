@@ -82,6 +82,12 @@ public:
         ss << "]";
         return ss.str();
     }
+
+    bool operator==(const Person& oth) const {
+        return m_name == oth.m_name
+            && m_age == oth.m_age
+            && m_sex == oth.m_sex;
+    }
 };
 
 template<>
@@ -128,6 +134,10 @@ void test_class() {
     for(auto& i : m) {
         WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "before: " << i.first << " - " << i.second.toString();
     }
+
+    g_person->addListener(10, [](const Person& old_value, const Person& new_value){
+            WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "old_value = " << old_value.toString() << " new_value = " << new_value.toString() ;
+    });
 
     YAML::Node root = YAML::LoadFile("/Users/alfmunny/Projects/wille/bin/conf/log.yml");
     wille::Config::LoadFromYaml(root);
