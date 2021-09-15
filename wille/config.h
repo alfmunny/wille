@@ -30,6 +30,7 @@ public:
 
     virtual std::string toString() = 0;
     virtual bool fromString(const std::string& val) = 0;
+    virtual std::string getTypeName()const = 0;
 protected:
     std::string m_name;
     std::string m_description;
@@ -247,7 +248,7 @@ public:
             //return boost::lexical_cast<std::string>(m_val);
         } catch (std::exception& e) {
             WILLE_LOG_ERROR(WILLE_LOG_ROOT()) << "ConfigVar::toString exception"
-                << e.what() << " convert: " << typeid(m_val).name() << "to string";
+                << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
@@ -259,11 +260,12 @@ public:
             return true;
         } catch (std::exception& e) {
             WILLE_LOG_ERROR(WILLE_LOG_ROOT()) << "ConfigVar::fromString exception"
-                << e.what() << " convert: " << typeid(m_val).name() << "to string";
+                << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return false;
     }
 
+    std::string getTypeName() const override { return typeid(T).name(); }
     const T getValue() const { return m_val; }
     void setValue(const T& v) { m_val = v; }
 
@@ -277,10 +279,20 @@ public:
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name,
             const T& default_value, const std::string& description = "") {
-        auto tmp = Lookup<T>(name);
-        if(tmp) {
-            WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "Lookup name" << name << " exists";
-            return tmp;
+        auto it = s_data.find(name);
+
+        if (it != s_data.end())
+        {
+            auto tmp = Lookup<T>(name);
+            if(tmp) {
+                WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "Lookup name" << name << " exists";
+                return tmp;
+            } 
+            else {
+                WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "Lookup name" << name << " exists but is not type "
+                    << typeid(T).name() << ", original type = " << it->second->getTypeName() << " value = " << it->second->toString();
+                return nullptr;
+            }
         }
 
         if (name.find_first_not_of("abcdefghikjlmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._0123456789")

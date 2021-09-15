@@ -1,9 +1,13 @@
 #include "wille/config.h"
 #include "wille/log.h"
 #include <yaml-cpp/yaml.h>
+#include <string>
 
 wille::ConfigVar<int>::ptr g_int_value_config = 
     wille::Config::Lookup("system.port", (int)8080, "system port");
+
+wille::ConfigVar<float>::ptr g_int_valuex_config = 
+    wille::Config::Lookup("system.port", (float)8080, "system port");
 
 wille::ConfigVar<float>::ptr g_float_value_config = 
     wille::Config::Lookup("system.value", (float)10.2f, "system value");
@@ -63,7 +67,82 @@ void test_config() {
 
 }
 
+
+class Person {
+public:
+    std::string m_name;
+    int m_age = 0;
+    bool m_sex = 0;
+
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "[Person name = " << m_name;
+        ss << " age=" << m_age;
+        ss << " sex=" << m_sex;
+        ss << "]";
+        return ss.str();
+    }
+};
+
+template<>
+class wille::LexicalCast<std::string, Person> {
+public:
+    Person operator()(const std::string& v) {
+        YAML::Node node = YAML::Load(v);
+        Person p;
+        p.m_name= node["name"].as<std::string>();
+        p.m_age = node["age"].as<int>();
+        p.m_sex= node["sex"].as<bool>();
+        return p;
+    }
+};
+
+template<>
+class wille::LexicalCast<Person, std::string> {
+public: 
+    std::string operator()(Person p) {
+        YAML::Node node;
+        std::stringstream ss;
+        node["name"]  = p.m_name;
+        node["age"] = p.m_age;
+        node["sex"] = p.m_sex;
+        ss << node;
+        return ss.str();
+    }
+};
+
+wille::ConfigVar<Person>::ptr g_person = 
+    wille::Config::Lookup("class.person", Person(), "person"); 
+    
+wille::ConfigVar<std::map<std::string, Person> >::ptr g_person_map = 
+    wille::Config::Lookup("class.map", std::map<std::string, Person>(), "person map"); 
+
+wille::ConfigVar<std::map<std::string, std::vector<Person> > >::ptr g_person_vec_map = 
+    wille::Config::Lookup("class.vec_map", std::map<std::string, std::vector<Person> >(), "person map"); 
+
+void test_class() {
+    WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+
+    auto m = g_person_map->getValue();
+
+    for(auto& i : m) {
+        WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "before: " << i.first << " - " << i.second.toString();
+    }
+
+    YAML::Node root = YAML::LoadFile("/Users/alfmunny/Projects/wille/bin/conf/log.yml");
+    wille::Config::LoadFromYaml(root);
+    WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
+
+    m = g_person_map->getValue();
+    for(auto& i : m) {
+        WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "after: " << i.first << " - " << i.second.toString();
+    }
+
+    WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "after: " << g_person_vec_map->toString();
+}
+
 int main(int argc, char** argv) {
-    test_config();
+    //test_config();
+    test_class();
     return 0;
 }
