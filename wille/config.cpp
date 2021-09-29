@@ -1,11 +1,9 @@
 #include "wille/config.h"
 
 namespace wille {
-Config::ConfigVarMap Config::s_data;
-
 ConfigVarBase::ptr Config::LookupBase(const std::string& name) {
-    auto it = s_data.find(name);
-    return it == s_data.end() ? nullptr : it->second;
+    auto it = GetData().find(name);
+    return it == GetData().end() ? nullptr : it->second;
 }
 
 static void ListAllMember(const std::string& prefix,

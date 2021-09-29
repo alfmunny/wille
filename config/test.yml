@@ -1,0 +1,54 @@
+logs:
+  - name: root
+    level: info
+    appenders:
+      - type: FileLogAppender
+        file: ~/Projects/wille/bin/root.txt
+      - type: StdoutLogAppender
+  - name: system
+    level: info
+    appenders:
+      - type: FileLogAppender
+        file: ~/Projects/wille/bin/system.txt
+      - type: StdoutLogAppender
+system:
+  port: 9900
+  value: 15
+  int_vec: [10, 20]
+  int_list: [20, 40]
+  int_set: [30, 60]
+  int_uset: [40, 80]
+  int_map: 
+    k : 100
+  int_umap: 
+    k : 200
+
+class:
+  person:
+    name: wille
+    age: 20
+    sex: true
+  map:
+    person1:
+      name: wille1
+      age: 21
+      sex: true
+    person2:
+      name: wille2
+      age: 22
+      sex: false
+  vec_map:
+    k1:
+      - name: m11
+        age: 33
+        sex: true
+      - name: m12
+        age: 33
+        sex: true
+    k2:
+      - name: m21
+        age: 33
+        sex: true
+      - name: m22
+        age: 33
+        sex: true

@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(wille)
 
+include(cmake/util.cmake)
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function")
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
 set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.76.0)
 find_package(Boost)
 
@@ -18,6 +20,7 @@ set(LIB_SRC
     )
 
 add_library(wille SHARED ${LIB_SRC})
+force_redefine_file_macro_for_sources(wille)
 
 if(Boost_FOUND)
     message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
@@ -32,13 +35,24 @@ endif()
 find_library(YAMLCPP yaml-cpp)
 target_link_libraries(${PROJECT_NAME} ${YAMLCPP})
 
-add_executable(test tests/test.cpp)
-add_dependencies(test wille)
-target_link_libraries(test wille)
+add_executable(test_basic tests/test.cpp)
+add_dependencies(test_basic wille)
+target_link_libraries(test_basic wille)
+force_redefine_file_macro_for_sources(test_basic)
 
 add_executable(test_config tests/test_config.cpp)
 add_dependencies(test_config wille)
 target_link_libraries(test_config wille)
+force_redefine_file_macro_for_sources(test_config)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+add_custom_target(run
+    #COMMAND test_basic
+    COMMAND test_config
+    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)
+
+#enable_testing()
+#add_test(NAME MyTest COMMAND test_config)
