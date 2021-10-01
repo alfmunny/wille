@@ -18,6 +18,7 @@ set(LIB_SRC
     wille/log.cpp
     wille/util.cpp
     wille/config.cpp
+    wille/mutex.h
     wille/thread.cpp
     )
 

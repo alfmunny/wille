@@ -1,15 +1,17 @@
 #ifndef __WILLE_THREAD_H__
 #define __WILLE_THREAD_H__
 
-#include <thread>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include <functional>
 #include <memory>
 #include <pthread.h>
+#include <semaphore.h>
 #include <string>
+#include <thread>
 
 namespace wille {
-class Thread {
 
+class Thread {
 public:
     typedef std::shared_ptr<Thread> ptr;
     Thread(std::function<void()> cb, const std::string& name);
@@ -29,15 +31,17 @@ private:
     Thread(const Thread&&) = delete;
     Thread& operator=(const Thread&) = delete;
 
-    static void* run(void *arg);
+    static void* run(void* arg);
+
 private:
     uint64_t m_id = -1;
     pthread_t m_thread = 0;
     std::function<void()> m_cb;
     std::string m_name;
+    // Semaphore m_semaphore;
+    boost::interprocess::interprocess_semaphore m_semaphore;
 };
 
-}
-
+} // namespace wille
 
 #endif
