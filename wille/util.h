@@ -9,7 +9,7 @@
 
 namespace wille {
 
-pid_t GetThreadId();
+uint64_t GetThreadId();
 
 uint32_t GetFiberId();
 

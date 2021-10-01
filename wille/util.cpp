@@ -1,9 +1,12 @@
 #include "util.h"
+#include <pthread.h>
 
 namespace wille {
 
-pid_t GetThreadId() {
-    return syscall(SYS_gettid);
+uint64_t GetThreadId() {
+    uint64_t tid;
+    pthread_threadid_np(NULL, &tid);
+    return tid;
 }
 
 uint32_t GetFiberId() {
