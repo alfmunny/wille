@@ -126,6 +126,23 @@ private:
     pthread_mutex_t m_mutex;
 };
 
+class NullMutex {
+public:
+    typedef ScopedLockImpl<NullMutex> Lock;
+
+    NullMutex(const NullMutex&) = delete;
+    NullMutex(const NullMutex&&) = delete;
+    NullMutex& operator=(const NullMutex&) = delete;
+
+    NullMutex() {}
+
+    ~NullMutex() {}
+
+    void lock() {}
+
+    void unlock() {}
+};
+
 class RWMutex {
 public:
     RWMutex(const RWMutex&) = delete;

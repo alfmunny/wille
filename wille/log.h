@@ -1,7 +1,9 @@
 #ifndef __WILLE_LOG_H__
 #define __WILLE_LOG_H__
 
+#include "mutex.h"
 #include "singleton.h"
+#include "thread.h"
 #include "util.h"
 #include <fstream>
 #include <list>
@@ -18,7 +20,7 @@
     wille::LogEventWrapper(                                                    \
         wille::LogEvent::ptr(new wille::LogEvent(                              \
             logger, level, __FILE__, __LINE__, 0, wille::GetThreadId(),        \
-            wille::GetFiberId(), time(0), "")))                                \
+            wille::GetFiberId(), time(0), wille::Thread::GetName())))          \
         .getSS()
 
 #define WILLE_LOG_DEBUG(logger) WILLE_LOG_LEVEL(logger, wille::LogLevel::DEBUG)
@@ -33,7 +35,7 @@
     wille::LogEventWrapper(                                                    \
         wille::LogEvent::ptr(new wille::LogEvent(                              \
             logger, level, __FILE__, __LINE__, 0, wille::GetThreadId(),        \
-            wille::GetFiberId(), time(0), "")))                                \
+            wille::GetFiberId(), time(0), wille::Thread::GetName())))          \
         .getEvent()                                                            \
         ->format(fmt, __VA_ARGS__)
 
@@ -155,13 +157,14 @@ private:
 class LogAppender {
 public:
     typedef std::shared_ptr<LogAppender> ptr;
+    typedef Mutex MutexType;
     virtual ~LogAppender() {}
     virtual void log(std::shared_ptr<Logger> logger, LogLevel::Level level,
                      LogEvent::ptr event) = 0;
     virtual std::string toYamlString() = 0;
 
-    void setFormatter(LogFormatter::ptr val) { m_formatter = val; }
-    LogFormatter::ptr getFormatter() const { return m_formatter; }
+    void setFormatter(LogFormatter::ptr val);
+    LogFormatter::ptr getFormatter();
 
     void setLevel(LogLevel::Level val) { m_level = val; }
     LogLevel::Level getLevel() const { return m_level; }
@@ -169,6 +172,7 @@ public:
 protected:
     LogLevel::Level m_level = LogLevel::Level::DEBUG;
     LogFormatter::ptr m_formatter;
+    MutexType m_mutex;
 };
 
 class Logger : public std::enable_shared_from_this<Logger> {
@@ -176,6 +180,7 @@ class Logger : public std::enable_shared_from_this<Logger> {
 
 public:
     typedef std::shared_ptr<Logger> ptr;
+    typedef Mutex MutexType;
 
     Logger(const std::string& name = "root");
     void log(LogLevel::Level level, LogEvent::ptr event);
@@ -192,19 +197,21 @@ public:
     LogLevel::Level getLevel() const { return m_level; }
     void setLevel(LogLevel::Level val) { m_level = val; }
 
-    LogFormatter::ptr getFormatter() { return m_formatter; }
+    LogFormatter::ptr getFormatter();
     void setFormatter(LogFormatter::ptr formatter);
     void setFormatter(const std::string& formatter);
 
     const std::string& getName() const { return m_name; }
 
     std::string toYamlString();
+
 private:
     std::string m_name;
     LogLevel::Level m_level;
     std::list<LogAppender::ptr> m_appenders;
     LogFormatter::ptr m_formatter;
     Logger::ptr m_root;
+    MutexType m_mutex;
 };
 
 class StdoutLogAppender : public LogAppender {
@@ -237,9 +244,11 @@ public:
     Logger::ptr getRoot() { return m_root; }
     void init();
     std::string toYamlString();
+
 private:
     std::map<std::string, Logger::ptr> m_loggers;
     Logger::ptr m_root;
+    Mutex m_mutex;
 };
 
 typedef wille::Singleton<LoggerManager> LoggerMgr;
