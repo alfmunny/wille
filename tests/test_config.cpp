@@ -151,8 +151,7 @@ void test_class() {
             << "before: " << i.first << " - " << i.second.toString();
     }
 
-    g_person->addListener(10,
-                          [](const Person& old_value, const Person& new_value) {
+    g_person->addListener([](const Person& old_value, const Person& new_value) {
                               WILLE_LOG_INFO(WILLE_LOG_ROOT())
                                   << "old_value = " << old_value.toString()
                                   << " new_value = " << new_value.toString();
@@ -177,7 +176,6 @@ void test_class() {
 
 void test_log() {
     static wille::Logger::ptr system_logger = WILLE_LOG_NAME("system");
-    static wille::Logger::ptr root_logger = WILLE_LOG_NAME("root");
     std::cout << wille::LoggerMgr::GetInstance()->toYamlString() << std::endl;
     WILLE_LOG_INFO(system_logger) << "hello world";
     YAML::Node root =
@@ -185,9 +183,9 @@ void test_log() {
     wille::Config::LoadFromYaml(root);
     std::cout << "===============" << std::endl;
     std::cout << wille::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    system_logger->setFormatter("%d - %m%n");
     WILLE_LOG_INFO(system_logger) << "hello world";
     WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "Hello world from root";
-    WILLE_LOG_INFO(root_logger) << "hello world another root";
 }
 
 int main(int argc, char** argv) {
@@ -195,5 +193,12 @@ int main(int argc, char** argv) {
     // test_class();
     test_log();
 
+    wille::Config::Visit([](wille::ConfigVarBase::ptr var) {
+            WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "name=" << var->getName() 
+            << " description=" << var->getDescription() 
+            << " typename=" << var->getTypeName()
+            << " value=" << var->toString(); 
+
+    });
     return 0;
 }

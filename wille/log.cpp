@@ -374,10 +374,10 @@ public:
 
 class DateTimeFormatItem : public LogFormatter::FormatItem {
 public:
-    DateTimeFormatItem(const std::string& format = "%Y-%m-%d %H:%M%S")
+    DateTimeFormatItem(const std::string& format = "%Y-%m-%d %H:%M:%S")
         : m_format(format) {
         if (m_format.empty()) {
-            m_format = "%Y-%m-%d %H:%M%S";
+            m_format = "%Y-%m-%d %H:%M:%S";
         }
     }
     void format(std::ostream& os, Logger::ptr logger, LogLevel::Level level,
@@ -529,6 +529,7 @@ void LogFormatter::init() {
 LoggerManager::LoggerManager() {
     m_root.reset(new Logger);
     m_root->addAppender(LogAppender::ptr(new StdoutLogAppender));
+    m_loggers[m_root->getName()] = m_root;
     init();
 }
 
@@ -686,8 +687,7 @@ wille::ConfigVar<std::set<LogDefine>>::ptr g_log_defines =
 
 struct LogIniter {
     LogIniter() {
-        g_log_defines->addListener(
-            0xF1E231, [](const std::set<LogDefine>& old_value,
+        g_log_defines->addListener([](const std::set<LogDefine>& old_value,
                          const std::set<LogDefine>& new_value) {
                 WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "on_logger_conf_changed";
                 for (auto& i : new_value) {
