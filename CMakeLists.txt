@@ -18,7 +18,7 @@ set(LIB_SRC
     wille/log.cpp
     wille/util.cpp
     wille/config.cpp
-    wille/mutex.h
+    wille/mutex.cpp
     wille/thread.cpp
     )
 
@@ -55,8 +55,13 @@ force_redefine_file_macro_for_sources(test_config)
 
 add_executable(test_thread tests/test_thread.cpp)
 add_dependencies(test_thread wille)
-target_link_libraries(test_thread wille pthread)
+target_link_libraries(test_thread ${LIBS})
 force_redefine_file_macro_for_sources(test_thread)
+
+add_executable(test_util tests/test_util.cpp)
+add_dependencies(test_util wille)
+target_link_libraries(test_util wille ${LIBS})
+force_redefine_file_macro_for_sources(test_util)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -64,7 +69,8 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 add_custom_target(run
     #COMMAND test_basic
     #COMMAND test_config
-    COMMAND test_thread
+    #COMMAND test_thread
+    COMMAND test_util
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
 

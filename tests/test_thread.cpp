@@ -12,12 +12,10 @@ wille::RWMutex rw_mutex;
 wille::Mutex mutex;
 
 void fun1() {
-    while(true) {
-        WILLE_LOG_INFO(logger) << "name: " << wille::Thread::GetName()
-            << " this.name: " << wille::Thread::GetThis()->getName()
-            << " id: " << wille::GetThreadId()
-            << " this.id: " << wille::Thread::GetThis()->getId();
-    }
+    WILLE_LOG_INFO(logger) << "name: " << wille::Thread::GetName()
+        << " this.name: " << wille::Thread::GetThis()->getName()
+        << " id: " << wille::GetThreadId()
+        << " this.id: " << wille::Thread::GetThis()->getId();
 }
 
 void fun2() {
@@ -49,7 +47,9 @@ int main() {
         //thr_v[i].join();
     }
 
-    WILLE_LOG_INFO(logger) << count;
+    WILLE_LOG_INFO(logger) << "count=" << count;
     WILLE_LOG_INFO(logger) << "tread test end";
+
     return 0;
+
 }
