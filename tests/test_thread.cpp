@@ -19,8 +19,6 @@ void fun1() {
 }
 
 void fun2() {
-    //wille::Mutex::Lock lock(mutex);
-    //wille::RWMutex::ReadLock lock(rw_mutex);
     wille::RWMutex::WriteLock lock(rw_mutex);
     for (int i = 0; i < 10000000; ++i) {
         ++count;
@@ -38,13 +36,10 @@ int main() {
 
     for (int i = 0; i < n_thread; ++i) {
         thrs.push_back(wille::Thread::ptr(new wille::Thread(*fun1, "name" + std::to_string(i))));
-        //thr_v.push_back(std::thread(fun2));
-        //thr_v[i] = std::thread(fun2);
     }
 
     for(int i = 0; i < n_thread; ++i) {
         thrs[i]->join();
-        //thr_v[i].join();
     }
 
     WILLE_LOG_INFO(logger) << "count=" << count;

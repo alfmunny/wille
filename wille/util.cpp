@@ -1,4 +1,5 @@
 #include "util.h"
+#include "fiber.h"
 #include <pthread.h>
 #include <execinfo.h>
 #include "log.h"
@@ -14,7 +15,7 @@ uint64_t GetThreadId() {
 }
 
 uint32_t GetFiberId() {
-    return 0;
+    return wille::Fiber::GetFiberId();
 }
 
 void Backtrace(std::vector<std::string>& bt, int size, int skip = 1) {

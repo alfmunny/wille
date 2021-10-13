@@ -5,7 +5,7 @@ include(cmake/util.cmake)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O0 -ggdb -std=c++14 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
 set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.76.0)
 find_package(Boost)
 find_library(PTHREAD pthread)
@@ -20,6 +20,7 @@ set(LIB_SRC
     wille/config.cpp
     wille/mutex.cpp
     wille/thread.cpp
+    wille/fiber.cpp
     )
 
 add_library(wille SHARED ${LIB_SRC})
@@ -60,8 +61,13 @@ force_redefine_file_macro_for_sources(test_thread)
 
 add_executable(test_util tests/test_util.cpp)
 add_dependencies(test_util wille)
-target_link_libraries(test_util wille ${LIBS})
+target_link_libraries(test_util ${LIBS})
 force_redefine_file_macro_for_sources(test_util)
+
+add_executable(test_fiber tests/test_fiber.cpp)
+add_dependencies(test_fiber wille)
+target_link_libraries(test_fiber ${LIBS})
+force_redefine_file_macro_for_sources(test_fiber)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -70,7 +76,8 @@ add_custom_target(run
     #COMMAND test_basic
     #COMMAND test_config
     #COMMAND test_thread
-    COMMAND test_util
+    #COMMAND test_util
+    COMMAND test_fiber
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
 
