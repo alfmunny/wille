@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <semaphore.h>
+#include <cstdint>
 
 namespace wille {
 class Semaphore {

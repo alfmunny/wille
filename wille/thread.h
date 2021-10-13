@@ -1,11 +1,12 @@
 #ifndef __WILLE_THREAD_H__
 #define __WILLE_THREAD_H__
 
-#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <sys/types.h>
 #include <functional>
 #include <memory>
 #include <pthread.h>
 #include <semaphore.h>
+#include "mutex.h"
 #include <string>
 #include <thread>
 
@@ -38,8 +39,8 @@ private:
     pthread_t m_thread = 0;
     std::function<void()> m_cb;
     std::string m_name;
-    // Semaphore m_semaphore;
-    boost::interprocess::interprocess_semaphore m_semaphore;
+    Semaphore m_semaphore;
+   // boost::interprocess::interprocess_semaphore m_semaphore;
 };
 
 } // namespace wille
