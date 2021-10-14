@@ -4,9 +4,10 @@
 #include <execinfo.h>
 #include "log.h"
 
-wille::Logger::ptr g_logger = WILLE_LOG_NAME("system");
 
 namespace wille {
+
+static wille::Logger::ptr g_logger = WILLE_LOG_NAME("system");
 
 uint64_t GetThreadId() {
     uint64_t tid;

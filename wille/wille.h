@@ -9,5 +9,6 @@
 #include "singleton.h"
 #include "thread.h"
 #include "util.h"
+#include "scheduler.h"
 
 #endif

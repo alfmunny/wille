@@ -28,10 +28,14 @@ public:
     ~Fiber();
 
     void reset(std::function<void()> cb);
+    void call();
+    void back();
     void swapIn();
     void swapOut();
 
     uint64_t getId() const { return m_id; }
+    State getState() const { return m_state; }
+    void setState(State val) { m_state = val; }
 
 public:
     static void SetThis(Fiber* f);

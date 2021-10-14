@@ -42,8 +42,7 @@ Fiber::Fiber() {
     }
     ++s_fiber_count;
 
-    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main"
-                              << " fiber count " << TotalFibers();
+    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main id=" << m_id;
 }
 
 
@@ -67,11 +66,18 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize)
 Fiber::~Fiber() {
     --s_fiber_count;
 
-    WILLE_ASSERT(!m_cb);
+    if(this != t_threadFiber.get()) {
+        WILLE_ASSERT(m_state == TERM
+                || m_state == EXCEPT
+                || m_state == INIT)
 
-    Fiber* cur = t_fiber;
-    if(cur == this) {
-        SetThis(nullptr);
+    } else {
+        WILLE_ASSERT(!m_cb);
+        WILLE_ASSERT(m_state == EXEC);
+        Fiber* cur = t_fiber;
+        if(cur == this) {
+            SetThis(nullptr);
+        }
     }
 
     WILLE_LOG_DEBUG(g_logger) << "Fiber::~Fiber id=" << m_id;
@@ -93,6 +99,21 @@ void Fiber::reset(std::function<void()> cb) {
     makecontext(&m_ctx, &Fiber::MainFunc, 0);
     m_state = INIT;
 };
+
+void Fiber::call() {
+    SetThis(this);
+    m_state = EXEC;
+    if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
+        WILLE_ASSERT2(false, "swapcontext");
+    }
+}
+
+void Fiber::back() {
+    SetThis(t_threadFiber.get());
+    if(swapcontext(&m_ctx, &t_threadFiber->m_ctx)) {
+        WILLE_ASSERT2(false, "swapcontext");
+    }
+}
 
 void Fiber::swapIn() {
     SetThis(this);

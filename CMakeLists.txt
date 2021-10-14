@@ -21,6 +21,7 @@ set(LIB_SRC
     wille/mutex.cpp
     wille/thread.cpp
     wille/fiber.cpp
+    wille/scheduler.cpp
     )
 
 add_library(wille SHARED ${LIB_SRC})
@@ -69,6 +70,11 @@ add_dependencies(test_fiber wille)
 target_link_libraries(test_fiber ${LIBS})
 force_redefine_file_macro_for_sources(test_fiber)
 
+add_executable(test_scheduler tests/test_scheduler.cpp)
+add_dependencies(test_scheduler wille)
+target_link_libraries(test_scheduler ${LIBS})
+force_redefine_file_macro_for_sources(test_scheduler)
+
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
@@ -77,7 +83,9 @@ add_custom_target(run
     #COMMAND test_config
     #COMMAND test_thread
     #COMMAND test_util
-    COMMAND test_fiber
+    #COMMAND test_fiber
+    COMMAND test_scheduler
+    
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
 
