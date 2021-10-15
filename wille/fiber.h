@@ -24,10 +24,10 @@ private:
     Fiber();
 
 public:
-    Fiber(std::function<void()> cb, size_t stacksize = 0, bool use_caller = false);
+    Fiber(std::function<void()> cb, size_t stacksize = 0, bool main = false);
     ~Fiber();
 
-    void reset(std::function<void()> cb, bool use_caller = true);
+    void reset(std::function<void()> cb);
     void call();
     void back();
     void swapIn();
@@ -50,11 +50,10 @@ private:
     uint64_t m_id = 0;
     //uint32_t m_stacksize = 0;
     State m_state = INIT;
-
     ucontext_t m_ctx;
     char m_stack[1024*1024];
-
     std::function<void()> m_cb;
+    bool m_main = true;
 };
 
 } // namespace wille

@@ -3,24 +3,30 @@
 #include "macro.h"
 
 namespace wille {
-static wille::Logger::ptr g_logger = WILLE_LOG_NAME("system");
+
+static Logger::ptr g_logger = WILLE_LOG_NAME("system");
 
 static thread_local Scheduler* t_scheuler = nullptr;
 static thread_local Fiber* t_fiber = nullptr;
+static thread_local std::string t_name =  "scheduler in google";
+
+std::string Scheduler::GetName() {
+    return t_name;
+};
 
 Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
     :m_name(name) {
     WILLE_ASSERT(threads > 0);
 
     if (use_caller) {
-        wille::Fiber::GetThis();
+        Fiber::GetThis();
         --threads;
         WILLE_ASSERT(GetThis() == nullptr);
         t_scheuler = this;
         m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
         Thread::SetName(m_name);
         t_fiber = m_rootFiber.get();
-        m_rootThread = wille::GetThreadId();
+        m_rootThread = GetThreadId();
         m_threadIds.push_back(m_rootThread);
     } else {
         m_rootThread = -1;
@@ -86,7 +92,7 @@ void Scheduler::stop() {
 
     if(m_rootFiber) {
         if(!stopping()) {
-            m_rootFiber->call();
+            m_rootFiber->swapIn();
         }
     }
 
@@ -108,7 +114,8 @@ void Scheduler::run() {
 
     Fiber::GetThis();
     setThis();
-    if (wille::GetThreadId() != m_rootThread) {
+
+    if (GetThreadId() != m_rootThread) {
         t_fiber = Fiber::GetThis().get();
     }
 
@@ -122,6 +129,7 @@ void Scheduler::run() {
         bool is_active = false;
         {
             MutexType::Lock lock(m_mutex);
+
             auto it = m_tasks.begin();
             while(it != m_tasks.end()) {
                 if(it->thread != -1 && it->thread != wille::GetThreadId()) {
@@ -215,7 +223,7 @@ bool Scheduler::stopping() {
 void Scheduler::idle() {
     WILLE_LOG_INFO(g_logger) << "idle";
     while(!stopping()) {
-        wille::Fiber::YieldToHold();
+        Fiber::YieldToHold();
     }
 }
 

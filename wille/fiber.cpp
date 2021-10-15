@@ -10,6 +10,7 @@ static std::atomic<uint64_t> s_fiber_id {0};
 static std::atomic<uint64_t> s_fiber_count {0};
 static thread_local Fiber* t_fiber = nullptr;
 static thread_local Fiber::ptr t_threadFiber = nullptr;
+static thread_local std::string t_name =  "fiber in amazon";
 
 static ConfigVar<uint32_t>::ptr g_fiber_stack_size = Config::Lookup<uint32_t>("fiber.stack_size", 128 * 1024, "fiber stack size");
 
@@ -43,13 +44,14 @@ Fiber::Fiber() {
     }
     ++s_fiber_count;
 
-    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main" ;
+    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main";
 }
 
 
-Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool use_caller) 
+Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool main) 
     :m_id(++s_fiber_id)
-    ,m_cb(cb) {
+    ,m_cb(cb)
+    ,m_main(main) {
     ++s_fiber_count;
 
     if(getcontext(&m_ctx)) {
@@ -59,11 +61,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool use_caller)
     m_ctx.uc_link = nullptr;
     m_ctx.uc_stack.ss_sp = m_stack;
     m_ctx.uc_stack.ss_size = sizeof(m_stack);
-    if(!use_caller) {
-        makecontext(&m_ctx, &Fiber::MainFunc, 0);
-    } else {
-        makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
-    }
+    makecontext(&m_ctx, &Fiber::MainFunc, 0);
 
     WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber id=" << m_id;
 }
@@ -88,7 +86,7 @@ Fiber::~Fiber() {
     WILLE_LOG_DEBUG(g_logger) << "Fiber::~Fiber id=" << m_id;
 }
 
-void Fiber::reset(std::function<void()> cb, bool use_caller) {
+void Fiber::reset(std::function<void()> cb) {
     WILLE_ASSERT(m_stack);
     WILLE_ASSERT(m_state == TERM 
             || m_state == INIT
@@ -105,33 +103,29 @@ void Fiber::reset(std::function<void()> cb, bool use_caller) {
     m_state = INIT;
 };
 
-void Fiber::call() {
-    SetThis(this);
-    m_state = EXEC;
-    if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
-        WILLE_ASSERT2(false, "swapcontext");
-    }
-}
-
-void Fiber::back() {
-    SetThis(t_threadFiber.get());
-    if(swapcontext(&m_ctx, &t_threadFiber->m_ctx)) {
-        WILLE_ASSERT2(false, "swapcontext");
-    }
-}
-
 void Fiber::swapIn() {
     SetThis(this);
-    WILLE_ASSERT(m_state != EXEC);
-    m_state = EXEC;
-    if(swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx)) {
-        WILLE_ASSERT2(false, "swapcontext");
+    if(m_main) {
+        if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
+            WILLE_ASSERT2(false, "swapcontext");
+        }
+    } else {
+        WILLE_ASSERT(m_state != EXEC);
+        m_state = EXEC;
+        if(swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx)) {
+            WILLE_ASSERT2(false, "swapcontext");
+        }
     }
 };
 
 void Fiber::swapOut() {
-    SetThis(Scheduler::GetMainFiber());
-    if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)) {
+    if (m_main) {
+        SetThis(t_threadFiber.get());
+    } else {
+        SetThis(Scheduler::GetMainFiber());
+    }
+
+    if(swapcontext(&m_ctx, &t_fiber->m_ctx)) {
         WILLE_ASSERT2(false, "swapcontext");
     }
 };
@@ -189,41 +183,7 @@ void Fiber::MainFunc() {
     }
 
     auto raw_ptr = cur.get();
-
-    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset begin";
     cur.reset();
-    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset end";
     raw_ptr->swapOut();
-    //cur->swapOut();
 }
-
-void Fiber::CallerMainFunc() {
-    Fiber::ptr cur = GetThis();
-    WILLE_ASSERT(cur);
-    try {
-        cur->m_cb();
-        cur->m_cb = nullptr;
-        cur->m_state = TERM;
-    } catch (std::exception& ex) {
-        cur->m_state = EXCEPT;
-                cur->m_state = EXCEPT;
-        WILLE_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what()
-            << " fiber_id=" << cur->getId()
-            << std::endl
-            << wille::BacktraceToString();
-        WILLE_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what();
-    } catch (...) {
-        cur->m_state = EXCEPT;
-        WILLE_LOG_ERROR(g_logger) << "Fiber Except";
-    }
-
-    auto raw_ptr = cur.get();
-
-    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset begin";
-    cur.reset();
-    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset end";
-    raw_ptr->back();
-    //cur->swapOut();
-}
-
 } // namespace wille

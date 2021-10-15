@@ -21,6 +21,7 @@ public:
 
     static Scheduler* GetThis();
     static Fiber* GetMainFiber();
+    static std::string GetName();
 
     void start();
     void stop();
