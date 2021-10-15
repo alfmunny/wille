@@ -17,8 +17,8 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
         --threads;
         WILLE_ASSERT(GetThis() == nullptr);
         t_scheuler = this;
-        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this)));
-        Thread::SetName(name);
+        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
+        Thread::SetName(m_name);
         t_fiber = m_rootFiber.get();
         m_rootThread = wille::GetThreadId();
         m_threadIds.push_back(m_rootThread);
@@ -99,14 +99,13 @@ void Scheduler::stop() {
     for(auto& i : thrs) {
         i->join();
     }
-    // if(exit_on_this_fiber) {
-
-    //}
 }
 
 void Scheduler::setThis() { t_scheuler = this; }
 
 void Scheduler::run() {
+    WILLE_LOG_DEBUG(g_logger) << m_name << " run";
+
     Fiber::GetThis();
     setThis();
     if (wille::GetThreadId() != m_rootThread) {
@@ -115,8 +114,8 @@ void Scheduler::run() {
 
     Fiber::ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle, this)));
     Fiber::ptr cb_fiber;
-
     Task tk;
+
     while(true) {
         tk.reset();
         bool tickle_me = false;
@@ -127,7 +126,6 @@ void Scheduler::run() {
             while(it != m_tasks.end()) {
                 if(it->thread != -1 && it->thread != wille::GetThreadId()) {
                     ++it;
-                    tickle_me = true;
                     continue;
                 }
 
@@ -136,10 +134,12 @@ void Scheduler::run() {
                     ++it;
                     continue;
                 }
+
                 tk = *it;
                 m_tasks.erase(it);
                 ++m_activeThreadCount;
                 is_active = true;
+                tickle_me = true;
                 break;
             }
         }
@@ -204,9 +204,7 @@ void Scheduler::run() {
 
 void Scheduler::tickle() {
     WILLE_LOG_INFO(g_logger) << "tickle";
-
 }
-
 
 bool Scheduler::stopping() {
     MutexType::Lock lock(m_mutex);

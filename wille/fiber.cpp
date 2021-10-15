@@ -1,6 +1,7 @@
 #include "fiber.h"
 #include "macro.h"
 #include "config.h"
+#include "scheduler.h"
 #include <atomic>
 
 namespace wille {
@@ -42,11 +43,11 @@ Fiber::Fiber() {
     }
     ++s_fiber_count;
 
-    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main id=" << m_id;
+    WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber main" ;
 }
 
 
-Fiber::Fiber(std::function<void()> cb, size_t stacksize) 
+Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool use_caller) 
     :m_id(++s_fiber_id)
     ,m_cb(cb) {
     ++s_fiber_count;
@@ -58,7 +59,11 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize)
     m_ctx.uc_link = nullptr;
     m_ctx.uc_stack.ss_sp = m_stack;
     m_ctx.uc_stack.ss_size = sizeof(m_stack);
-    makecontext(&m_ctx, &Fiber::MainFunc, 0);
+    if(!use_caller) {
+        makecontext(&m_ctx, &Fiber::MainFunc, 0);
+    } else {
+        makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
+    }
 
     WILLE_LOG_DEBUG(g_logger) << "Fiber::Fiber id=" << m_id;
 }
@@ -83,7 +88,7 @@ Fiber::~Fiber() {
     WILLE_LOG_DEBUG(g_logger) << "Fiber::~Fiber id=" << m_id;
 }
 
-void Fiber::reset(std::function<void()> cb) {
+void Fiber::reset(std::function<void()> cb, bool use_caller) {
     WILLE_ASSERT(m_stack);
     WILLE_ASSERT(m_state == TERM 
             || m_state == INIT
@@ -119,19 +124,16 @@ void Fiber::swapIn() {
     SetThis(this);
     WILLE_ASSERT(m_state != EXEC);
     m_state = EXEC;
-    if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
+    if(swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx)) {
         WILLE_ASSERT2(false, "swapcontext");
-        
     }
 };
 
 void Fiber::swapOut() {
-    SetThis(t_threadFiber.get());
-
-    if(swapcontext(&m_ctx, &t_threadFiber->m_ctx)) {
+    SetThis(Scheduler::GetMainFiber());
+    if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)) {
         WILLE_ASSERT2(false, "swapcontext");
     }
-
 };
 
 void Fiber::SetThis(Fiber* f) {
@@ -192,6 +194,35 @@ void Fiber::MainFunc() {
     cur.reset();
     //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset end";
     raw_ptr->swapOut();
+    //cur->swapOut();
+}
+
+void Fiber::CallerMainFunc() {
+    Fiber::ptr cur = GetThis();
+    WILLE_ASSERT(cur);
+    try {
+        cur->m_cb();
+        cur->m_cb = nullptr;
+        cur->m_state = TERM;
+    } catch (std::exception& ex) {
+        cur->m_state = EXCEPT;
+                cur->m_state = EXCEPT;
+        WILLE_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what()
+            << " fiber_id=" << cur->getId()
+            << std::endl
+            << wille::BacktraceToString();
+        WILLE_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what();
+    } catch (...) {
+        cur->m_state = EXCEPT;
+        WILLE_LOG_ERROR(g_logger) << "Fiber Except";
+    }
+
+    auto raw_ptr = cur.get();
+
+    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset begin";
+    cur.reset();
+    //WILLE_LOG_DEBUG(g_logger) << "Sub fiber reset end";
+    raw_ptr->back();
     //cur->swapOut();
 }
 

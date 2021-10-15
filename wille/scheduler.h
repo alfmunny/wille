@@ -6,6 +6,7 @@
 #include "thread.h"
 #include <list>
 #include <vector>
+#include "log.h"
 
 namespace wille {
 class Scheduler {
@@ -57,9 +58,9 @@ public:
 protected:
     virtual void tickle();
     virtual bool stopping();
+    virtual void idle();
     void run();
     void setThis();
-    virtual void idle();
 private:
     template<class FiberOrCb>
     bool scheduleNoLock(FiberOrCb fc, int thread) {
