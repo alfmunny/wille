@@ -105,8 +105,6 @@ void Scheduler::stop() {
 void Scheduler::setThis() { t_scheduler = this; }
 
 void Scheduler::run() {
-    WILLE_LOG_DEBUG(g_logger) << m_name << " run";
-
     Fiber::GetThis();
     setThis();
 
