@@ -6,13 +6,8 @@ namespace wille {
 
 static Logger::ptr g_logger = WILLE_LOG_NAME("system");
 
-static thread_local Scheduler* t_scheuler = nullptr;
+static thread_local Scheduler* t_scheduler = nullptr;
 static thread_local Fiber* t_fiber = nullptr;
-static thread_local std::string t_name =  "scheduler in google";
-
-std::string Scheduler::GetName() {
-    return t_name;
-};
 
 Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
     :m_name(name) {
@@ -22,7 +17,7 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
         Fiber::GetThis();
         --threads;
         WILLE_ASSERT(GetThis() == nullptr);
-        t_scheuler = this;
+        t_scheduler= this;
         m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
         Thread::SetName(m_name);
         t_fiber = m_rootFiber.get();
@@ -37,11 +32,11 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
 Scheduler::~Scheduler() {
     WILLE_ASSERT(m_stopping);
     if (GetThis() == this) {
-        t_scheuler = nullptr;
+        t_scheduler = nullptr;
     }
 }
 
-Scheduler* Scheduler::GetThis() { return t_scheuler; }
+Scheduler* Scheduler::GetThis() { return t_scheduler; }
 
 Fiber* Scheduler::GetMainFiber() { return t_fiber; }
 
@@ -107,7 +102,7 @@ void Scheduler::stop() {
     }
 }
 
-void Scheduler::setThis() { t_scheuler = this; }
+void Scheduler::setThis() { t_scheduler = this; }
 
 void Scheduler::run() {
     WILLE_LOG_DEBUG(g_logger) << m_name << " run";

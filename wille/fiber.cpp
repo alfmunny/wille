@@ -10,7 +10,6 @@ static std::atomic<uint64_t> s_fiber_id {0};
 static std::atomic<uint64_t> s_fiber_count {0};
 static thread_local Fiber* t_fiber = nullptr;
 static thread_local Fiber::ptr t_threadFiber = nullptr;
-static thread_local std::string t_name =  "fiber in amazon";
 
 static ConfigVar<uint32_t>::ptr g_fiber_stack_size = Config::Lookup<uint32_t>("fiber.stack_size", 128 * 1024, "fiber stack size");
 
