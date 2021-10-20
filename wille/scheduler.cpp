@@ -151,16 +151,14 @@ void Scheduler::run() {
             tickle();
         }
 
-        if(tk.fiber && tk.fiber->getState() != Fiber::TERM 
-                && tk.fiber->getState() != Fiber::EXCEPT) {
+        if(tk.fiber && !tk.fiber->stateTermOrExcept()) {
 
             tk.fiber->swapIn();
             --m_activeThreadCount;
 
             if(tk.fiber->getState() == Fiber::READY) {
                 schedule(tk.fiber);
-            } else if (tk.fiber->getState() != Fiber::TERM
-                    && tk.fiber->getState() != Fiber::EXCEPT) {
+            } else if (!tk.fiber->stateTermOrExcept()) {
                 tk.fiber->setState(Fiber::HOLD);
             }
             tk.reset();
@@ -177,8 +175,7 @@ void Scheduler::run() {
             if(cb_fiber->getState() == Fiber::READY) {
                 schedule(cb_fiber);
                 cb_fiber.reset();
-            } else if(cb_fiber->getState() == Fiber::EXCEPT
-                    || cb_fiber->getState() == Fiber::TERM) {
+            } else if(cb_fiber->stateTermOrExcept()) {
                 cb_fiber->reset(nullptr);
             } else { // if(cb_fiber->getState != Fiber::TERM)
                 cb_fiber->setState(Fiber::HOLD);
@@ -197,8 +194,7 @@ void Scheduler::run() {
             ++m_idleThreadCount;
             idle_fiber->swapIn();
             --m_idleThreadCount;
-            if(idle_fiber->getState() != Fiber::TERM
-                    && idle_fiber->getState() != Fiber::EXCEPT) {
+            if(!idle_fiber->stateTermOrExcept()) {
                 idle_fiber->setState(Fiber::HOLD);
             }
         }

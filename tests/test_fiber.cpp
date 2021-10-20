@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     wille::Thread::SetName("main");
 
     std::vector<wille::Thread::ptr> thrs;
-    for(int i = 0; i < 1; ++i) {
+    for(int i = 0; i < 3; ++i) {
         thrs.push_back(wille::Thread::ptr(
                     new wille::Thread(&test_fiber, "name_" + std::to_string(i))
                     ));

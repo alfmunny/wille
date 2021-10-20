@@ -36,6 +36,7 @@ public:
     uint64_t getId() const { return m_id; }
     State getState() const { return m_state; }
     void setState(State val) { m_state = val; }
+    bool stateTermOrExcept() { return m_state == TERM || m_state == EXCEPT; }
 
 public:
     static void SetThis(Fiber* f);

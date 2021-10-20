@@ -88,8 +88,8 @@ Fiber::~Fiber() {
 void Fiber::reset(std::function<void()> cb) {
     WILLE_ASSERT(m_stack);
     WILLE_ASSERT(m_state == TERM 
-            || m_state == INIT
-            || m_state == EXCEPT);
+            || m_state ==EXCEPT 
+            || m_state == INIT);
     m_cb = cb;
     if(getcontext(&m_ctx)) {
         WILLE_ASSERT2(false, "getcontext");
@@ -104,13 +104,14 @@ void Fiber::reset(std::function<void()> cb) {
 
 void Fiber::swapIn() {
     SetThis(this);
-    if(m_main) {
+    WILLE_ASSERT(m_state != EXEC);
+    m_state = EXEC;
+
+    if(m_main || !Scheduler::GetMainFiber()) {
         if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
             WILLE_ASSERT2(false, "swapcontext");
         }
     } else {
-        WILLE_ASSERT(m_state != EXEC);
-        m_state = EXEC;
         if(swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx)) {
             WILLE_ASSERT2(false, "swapcontext");
         }
@@ -118,7 +119,7 @@ void Fiber::swapIn() {
 };
 
 void Fiber::swapOut() {
-    if (m_main) {
+    if (m_main || !Scheduler::GetMainFiber()) {
         SetThis(t_threadFiber.get());
     } else {
         SetThis(Scheduler::GetMainFiber());
@@ -170,7 +171,6 @@ void Fiber::MainFunc() {
         cur->m_state = TERM;
     } catch (std::exception& ex) {
         cur->m_state = EXCEPT;
-                cur->m_state = EXCEPT;
         WILLE_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what()
             << " fiber_id=" << cur->getId()
             << std::endl

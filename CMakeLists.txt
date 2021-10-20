@@ -83,7 +83,7 @@ add_custom_target(run
     #COMMAND test_config
     #COMMAND test_thread
     #COMMAND test_util
-    #COMMAND test_fiber
+    COMMAND test_fiber
     COMMAND test_scheduler
     
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
