@@ -1,6 +1,12 @@
 #ifndef __WILLE_FIBER_H__
 #define __WILLE_FIBER_H__
-#define _XOPEN_SOURCE 600
+
+#ifdef __APPLE__
+    #define _XOPEN_SOURCE 600
+#elif __linux
+
+#endif
+
 #include <memory>
 #include <functional>
 #include <ucontext.h>

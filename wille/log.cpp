@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <stdarg.h>
 
 namespace wille {
 
@@ -583,7 +584,7 @@ struct LogDefine {
     bool operator<(const LogDefine& oth) const { return name < oth.name; }
 };
 
-template <> class wille::LexicalCast<std::string, LogDefine> {
+template <> class LexicalCast<std::string, LogDefine> {
 public:
     LogDefine operator()(const std::string& v) {
         std::cout << "f1" << std::endl;
@@ -645,7 +646,7 @@ public:
     }
 };
 
-template <> class wille::LexicalCast<LogDefine, std::string> {
+template <> class LexicalCast<LogDefine, std::string> {
 public:
     std::string operator()(const LogDefine& ld) {
         YAML::Node node;
@@ -682,8 +683,8 @@ public:
     }
 };
 
-wille::ConfigVar<std::set<LogDefine>>::ptr g_log_defines =
-    wille::Config::Lookup("logs", std::set<LogDefine>(), "logs config");
+ConfigVar<std::set<LogDefine>>::ptr g_log_defines =
+    Config::Lookup("logs", std::set<LogDefine>(), "logs config");
 
 struct LogIniter {
     LogIniter() {
@@ -692,7 +693,7 @@ struct LogIniter {
                 WILLE_LOG_INFO(WILLE_LOG_ROOT()) << "on_logger_conf_changed";
                 for (auto& i : new_value) {
                     auto it = old_value.find(i);
-                    wille::Logger::ptr logger;
+                    Logger::ptr logger;
                     if (it == old_value.end() ) {
                         logger = WILLE_LOG_NAME(i.name);
                     } else {
@@ -712,7 +713,7 @@ struct LogIniter {
                     logger->clearAppenders();
 
                     for (auto& a : i.appenders) {
-                        wille::LogAppender::ptr ap;
+                        LogAppender::ptr ap;
                         if (a.type == 1) {
                             ap.reset(new FileLogAppender(a.file));
                         } else {

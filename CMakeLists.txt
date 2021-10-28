@@ -6,7 +6,7 @@ include(cmake/util.cmake)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -O0 -ggdb -std=c++14 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
-set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.76.0)
+#set(BOOST_ROOT /opt/homebrew/Cellar/boost/1.76.0)
 find_package(Boost)
 find_library(PTHREAD pthread)
 

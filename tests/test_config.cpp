@@ -101,7 +101,8 @@ public:
     }
 };
 
-template <> class wille::LexicalCast<std::string, Person> {
+namespace wille {
+template <> class LexicalCast<std::string, Person> {
 public:
     Person operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -113,7 +114,7 @@ public:
     }
 };
 
-template <> class wille::LexicalCast<Person, std::string> {
+template <> class LexicalCast<Person, std::string> {
 public:
     std::string operator()(const Person& p) {
         YAML::Node node;
@@ -125,6 +126,8 @@ public:
         return ss.str();
     }
 };
+}
+
 
 wille::ConfigVar<Person>::ptr g_person =
     wille::Config::Lookup("class.person", Person(), "person");
