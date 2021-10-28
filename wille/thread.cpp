@@ -63,7 +63,11 @@ void* Thread::run(void* arg) {
     t_thread = thread;
     t_thread_name = thread->m_name;
     thread->m_id = wille::GetThreadId();
+#ifdef __APPLE__
+    pthread_setname_np(thread->m_name.substr(0, 15).c_str());
+#elif __linux
     pthread_setname_np(pthread_self(), thread->m_name.substr(0, 15).c_str());
+#endif
 
     std::function<void()> cb;
     cb.swap(thread->m_cb);
