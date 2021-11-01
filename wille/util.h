@@ -11,7 +11,13 @@
 
 namespace wille {
 
+
+#ifdef __APPLE__
 uint64_t GetThreadId();
+#elif __linux
+pid_t GetThreadId();
+#endif
+
 uint32_t GetFiberId();
 
 void Backtrace(std::vector<std::string>& bt, int size, int skip);

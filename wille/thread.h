@@ -1,7 +1,10 @@
 #ifndef __WILLE_THREAD_H__
 #define __WILLE_THREAD_H__
 
-#include <sys/types.h>
+#ifdef __APPLE__
+    #include <sys/types.h>
+#endif
+
 #include <functional>
 #include <memory>
 #include <pthread.h>

@@ -9,11 +9,17 @@ namespace wille {
 
 static wille::Logger::ptr g_logger = WILLE_LOG_NAME("system");
 
+#ifdef __APPLE__
 uint64_t GetThreadId() {
     uint64_t tid;
     pthread_threadid_np(NULL, &tid);
     return tid;
 }
+#elif __linux
+pid_t GetThreadId() {
+    return syscall(SYS_gettid);
+}
+#endif
 
 uint32_t GetFiberId() {
     return wille::Fiber::GetFiberId();

@@ -2,6 +2,7 @@
 #define __WILLE_MUTEX_H__
 
 #include <pthread.h>
+#include <atomic>
 #include <semaphore.h>
 #include <cstdint>
 
@@ -20,7 +21,11 @@ private:
     Semaphore& operator=(const Semaphore&) = delete;
 
 private:
-    sem_t* m_semaphore;
+#ifdef __APPPLE__
+    sem_t* m_semaphore = nullptr;
+#elif __linux
+    sem_t m_semaphore;
+#endif
 };
 
 template <class T> class ScopedLockImpl {
