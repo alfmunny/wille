@@ -62,6 +62,8 @@ protected:
     virtual void idle();
     void run();
     void setThis();
+
+    bool hasIdleThreads() { return m_idleThreadCount > 0; }
 private:
     template<class FiberOrCb>
     bool scheduleNoLock(FiberOrCb fc, int thread) {

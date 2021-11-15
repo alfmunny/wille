@@ -12,8 +12,8 @@ public:
 
     enum Event {
         NONE    = 0x0,
-        READ    = -1,
-        WRITE   = -2,
+        READ    = 0x1,
+        WRITE   = 0x4,
     };
 private:
 
@@ -31,8 +31,7 @@ private:
         EventContext read;
         EventContext write;
         int fd = 0;
-        bool event_read = false;
-        bool event_write = false;
+        Event events = NONE;
         MutexType mutex;
     };
 
@@ -53,7 +52,7 @@ protected:
     void contextResize(size_t size);
 
 private:
-    int m_kqfd = 0;
+    int m_epfd = 0;
     int m_tickleFds[2];
     std::atomic<size_t> m_pendingEventCount = {0};
     RWMutexType m_mutex;
