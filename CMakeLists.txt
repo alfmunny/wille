@@ -23,6 +23,7 @@ set(LIB_SRC
     wille/fiber.cpp
     wille/scheduler.cpp
     wille/iomanager.cpp
+    wille/timer.cpp
     )
 
 add_library(wille SHARED ${LIB_SRC})

@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <execinfo.h>
 #include "log.h"
+#include <sys/time.h>
 
 
 namespace wille {
@@ -56,4 +57,11 @@ std::string BacktraceToString(int size, int skip, const std::string& prefix) {
     }
     return ss.str();
 }
+
+uint64_t GetCurrentMS() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000ul  + tv.tv_usec / 1000;
+}
+
 }
