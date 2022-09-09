@@ -40,21 +40,21 @@ public:
     }
 
     template<class InputIterator>
-        void schedule(InputIterator begin, InputIterator end) {
-            bool need_tickle = false;
-            {
-                MutexType::Lock lock(m_mutex);
-                while(begin != end) {
-                    need_tickle = scheduleNoLock(&*begin, -1) || need_tickle;
-                    ++begin;
-                }
+    void schedule(InputIterator begin, InputIterator end) {
+        bool need_tickle = false;
+        {
+            MutexType::Lock lock(m_mutex);
+            while(begin != end) {
+                need_tickle = scheduleNoLock(&*begin, -1) || need_tickle;
+                ++begin;
             }
-
-            if(need_tickle) {
-                tickle();
-            }
-
         }
+
+        if(need_tickle) {
+            tickle();
+        }
+
+    }
 
 protected:
     virtual void tickle();

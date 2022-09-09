@@ -82,17 +82,17 @@ add_dependencies(test_iomanager wille)
 target_link_libraries(test_iomanager ${LIBS})
 force_redefine_file_macro_for_sources(test_iomanager)
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+SET(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 add_custom_target(run
     #COMMAND test_basic
     #COMMAND test_config
     #COMMAND test_thread
     #COMMAND test_util
-    #COMMAND test_fiber
-    COMMAND test_scheduler
-    COMMAND test_iomanager
+    COMMAND test_fiber
+    #COMMAND test_scheduler
+    #COMMAND test_iomanager
     
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )

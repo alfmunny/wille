@@ -126,6 +126,7 @@ void Scheduler::run() {
 
             auto it = m_tasks.begin();
             while(it != m_tasks.end()) {
+                // Check if it should run on a specific thread
                 if(it->thread != -1 && it->thread != wille::GetThreadId()) {
                     ++it;
                     continue;

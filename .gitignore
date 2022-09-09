@@ -1,6 +1,11 @@
 .cache
+.clangd
+cmake_install.cmake
 compile_commands.json
 build
 bin
 lib
 log.txt
+CMakeCache.txt
+CMakeFiles
+Makefile

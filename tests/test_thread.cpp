@@ -12,10 +12,15 @@ wille::RWMutex rw_mutex;
 wille::Mutex mutex;
 
 void fun1() {
-    WILLE_LOG_INFO(logger) << "name: " << wille::Thread::GetName()
-        << " this.name: " << wille::Thread::GetThis()->getName()
-        << " id: " << wille::GetThreadId()
-        << " this.id: " << wille::Thread::GetThis()->getId();
+    int count = 100;
+
+    for (int i = 0; i < count; ++i) {
+        WILLE_LOG_INFO(logger) << "name: " << wille::Thread::GetName()
+            << " this.name: " << wille::Thread::GetThis()->getName()
+            << " id: " << wille::GetThreadId()
+            << " this.id: " << wille::Thread::GetThis()->getId();
+
+    }
 }
 
 void fun2() {
@@ -31,7 +36,7 @@ int main() {
     std::vector<std::thread> thr_v(5);
     int n_thread = 5;
 
-    YAML::Node root = YAML::LoadFile("/Users/alfmunny/Projects/wille/config/log.yml");
+    YAML::Node root = YAML::LoadFile("/home/alfmunny/Projects/wille/config/log.yml");
     wille::Config::LoadFromYaml(root);
 
     for (int i = 0; i < n_thread; ++i) {

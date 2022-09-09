@@ -2,16 +2,11 @@
 #include "log.h"
 #include "macro.h"
 
-#ifdef __APPLE__
-    #include <sys/event.h>
-    #include <sys/time.h>
-#elif __linux
-    #include <errno.h>
-    #include <fcntl.h>
-    #include <sys/epoll.h>
-    #include <string.h>
-    #include <unistd.h>
-#endif
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/epoll.h>
+#include <string.h>
+#include <unistd.h>
 
 #define LOG_EPOLL_CTL_ERROR(epfd, op, fd, event, rt) \
         WILLE_LOG_ERROR(g_logger) << "epoll_ctl(" << epfd << ", " \
@@ -116,7 +111,6 @@ bool IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
         contextResize(fd * 1.5);
         fd_ctx = m_fdContexts[fd];
     }
-
 
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
 

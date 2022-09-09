@@ -11,7 +11,8 @@ wille::Logger::ptr g_logger = WILLE_LOG_ROOT();
 
 int sock = 0;
 
-void test_fiber() { WILLE_LOG_INFO(g_logger) << "test_fiber sock=" << sock;
+void test_fiber() { 
+    WILLE_LOG_INFO(g_logger) << "test_fiber sock=" << sock;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(sock, F_SETFL, O_NONBLOCK);
@@ -41,10 +42,9 @@ void test_fiber() { WILLE_LOG_INFO(g_logger) << "test_fiber sock=" << sock;
     }
 }
 
-wille::Timer::ptr s_timer;
 void test_timer() {
     wille::IOManager iom(2);
-    s_timer = iom.addTimer(1000, [](){
+    wille::Timer::ptr s_timer = iom.addTimer(1000, [&](){
         static int i = 0;
         WILLE_LOG_INFO(g_logger) << "hello timer i=" << i;
         if(++i == 3) {

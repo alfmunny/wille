@@ -81,7 +81,9 @@ bool Timer::reset(uint64_t ms, bool from_now) {
         return false;
     }
 
-    auto it = m_manager->m_timers.find(shared_from_this());
+    auto timer = shared_from_this();
+    auto it = m_manager->m_timers.find(timer);
+
     if(it == m_manager->m_timers.end()) {
         return false;
     }

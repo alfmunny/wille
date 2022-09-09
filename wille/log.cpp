@@ -186,6 +186,9 @@ bool FileLogAppender::reopen() {
 void FileLogAppender::log(std::shared_ptr<Logger> logger, LogLevel::Level level,
                           LogEvent::ptr event) {
     if (level >= m_level) {
+        // In case of deleting the file while writing
+        // Reopen the file every 3s
+        // The log between 0s-3s will be lost if the file is deleted
         uint64_t now = event->getTime();
         if (now >= (m_lastTime + 3)) {
             reopen();
@@ -486,8 +489,8 @@ void LogFormatter::init() {
         s_format_items = {
 #define XX(str, C)                                                             \
     {                                                                          \
-#str,                                                                  \
-            [](const std::string& fmt) { return FormatItem::ptr(new C(fmt)); } \
+        #str,                                                                  \
+        [](const std::string& fmt) { return FormatItem::ptr(new C(fmt)); }     \
     }
 
             XX(m, MessageFormatItem),    // m:消息

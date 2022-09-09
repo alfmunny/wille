@@ -2,6 +2,21 @@
 
 A multi-threading server-client framework
 
+## Build
+
+```sh
+mkdir build
+cmake -Bbuild -S.
+make -C build run
+```
+
+```
+```
+
+## Test
+
+
+
 ## Logging
 
 - `Logger`
