@@ -11,6 +11,7 @@ static thread_local Fiber* t_fiber = nullptr;
 
 Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
     :m_name(name) {
+    Thread::SetName(m_name);
     WILLE_ASSERT(threads > 0);
 
     if (use_caller) {
@@ -19,7 +20,6 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
         WILLE_ASSERT(GetThis() == nullptr);
         t_scheduler= this;
         m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
-        Thread::SetName(m_name);
         t_fiber = m_rootFiber.get();
         m_rootThread = GetThreadId();
         m_threadIds.push_back(m_rootThread);
@@ -140,14 +140,14 @@ void Scheduler::run() {
 
                 tk = *it;
                 m_tasks.erase(it);
-                ++m_activeThreadCount;
-                is_active = true;
+                tickle_me = true;
                 break;
             }
-            tickle_me |= it != m_tasks.end();
         }
 
         if(tickle_me) {
+            ++m_activeThreadCount;
+            is_active = true;
             tickle();
         }
 

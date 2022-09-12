@@ -15,11 +15,12 @@ void func() {
 
 int main(int argc, char** argv) {
     WILLE_LOG_INFO(g_logger) << "main";
-    wille::Scheduler sc(3, false, "test");
+    wille::Scheduler sc(1, true, "test");
     sc.start();
     sleep(2);
     WILLE_LOG_INFO(g_logger) << "schedule func";
     sc.schedule(&func);
+    sleep(2);
     sc.stop();
     WILLE_LOG_INFO(g_logger) << "main over";
     return 0;

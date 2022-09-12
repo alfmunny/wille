@@ -59,13 +59,13 @@ IOManager::IOManager(size_t threads, bool use_caller, const std::string& name)
 
     int rt = pipe(m_tickleFds);
     WILLE_ASSERT(!rt);
+    rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK); 
+    WILLE_ASSERT(!rt);
 
     epoll_event event;
     memset(&event, 0, sizeof(epoll_event));
     event.events = EPOLLIN | EPOLLET;
     event.data.fd = m_tickleFds[0];
-    rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK); 
-    WILLE_ASSERT(!rt);
 
     rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
     WILLE_ASSERT(!rt);
@@ -284,7 +284,7 @@ bool IOManager::stopping() {
 void IOManager::idle() {
     WILLE_LOG_DEBUG(g_logger) << "idle";
     const uint64_t MAX_EVENTS = 256;
-    epoll_event* events = new epoll_event[MAX_EVENTS]();
+    epoll_event* events = new epoll_event[MAX_EVENTS];
     std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr) {
             delete[] ptr;
     });

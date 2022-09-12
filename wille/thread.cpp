@@ -21,6 +21,7 @@ void Thread::SetName(const std::string& name) {
     }
 
     t_thread_name = name;
+    pthread_setname_np(pthread_self(), name.substr(0, 15).c_str());
 }
 
 Thread* Thread::GetThis() { return t_thread; }
@@ -63,12 +64,8 @@ void* Thread::run(void* arg) {
     t_thread = thread;
     t_thread_name = thread->m_name;
     thread->m_id = wille::GetThreadId();
-#ifdef __APPLE__
-    pthread_setname_np(thread->m_name.substr(0, 15).c_str());
-#elif __linux
-    pthread_setname_np(pthread_self(), thread->m_name.substr(0, 15).c_str());
-#endif
 
+    SetName(t_thread_name);
     std::function<void()> cb;
     cb.swap(thread->m_cb);
     thread->m_semaphore.notify();
